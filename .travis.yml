@@ -1,13 +1,53 @@
-language: java
-sudo: false
-jdk:
-- oraclejdk8
-- oraclejdk7
-- openjdk7
+addons:
+  artifacts:
+    debug: true
+    paths:
+    - libs.zip
+    - build.zip
+    - testbuild.zip
+    - jacoco.exec
+    target_paths: a1250db8-bdf3-4141-bb11-8a2102a0a97d
 after_success:
-- chmod -R 777 ./travis/after_success.sh
-- "./travis/after_success.sh"
+- ' wget --content-disposition http://search.maven.org/remotecontent?filepath=org/jacoco/jacoco/0.7.7.201606060606/jacoco-0.7.7.201606060606.zip '
+- ' unzip -o jacoco-0.7.7.201606060606.zip  '
+- ' cd lib  '
+- ' mv * ../  '
+- ' cd ..  '
+- ' chmod a+x *  '
+- ' cd $PWD  '
+- ' rm  ''jacoco.exec'''
+- ' export JAVA_TOOL_OPTIONS=-javaagent:$PWD/jacocoagent.jar=destfile=$PWD/jacoco.exec,append=true  '
+- ' travis_wait 720 mvn  test -Dmaven.test.failure.ignore=true -Djacoco.skip=true
+  -Dcobertura.skip=true -Dmaven.clover.skip=true -Dmaven.javadoc.skip=true -Drat.skip=true
+  -Drat.ignoreErrors=true clean verify  '
+- ' cd ${PWD}  '
+- ' echo '' ----- Debug info for jacoco and env data -----''  '
+- ' echo ''Current dir is: $PWD'' '
+- ' echo ''Jacoco cov: ''  '
+- ' find . -name ''*.exec''  '
+- ' echo '' ----------------------------------------------'' '
+- ./df-build.sh
+before_install: []
+branches: ''
+cache:
+  directories:
+  - $HOME/.m2
 env:
   global:
   - secure: v7aD00cje5ZqZ/Oq8mtZzjfsGNVNI23RAw9aUl0KHymIWi6/ARhfMf5gOR40g8CGPQEXgv6CTQfJlTKohvObZFD1unjoI2htrN5qK3kct2PaY1i/tgQRk6HTvei+VIXXb72HTDUTyPlevt1gk1bCUBZlxlj3rSwI140/ryd/ySU=
   - secure: R1P1NYZiVyNp1ZOK+zugM2ZJFG17FMIV3g7kZarwP14MbqMm9ix4r3YC1UX5/vEXQoOMM7xwOeCYWIXgUQZMOOqU12DqTOk8QXoG881mGqUooAFVq/KEwEmQvH107/9a5/q5n+Wp7/xF/BZ8k5uKRzyrnr5p6mmQ4AFnHes12sw=
+jdk:
+- oraclejdk8
+language: java
+notifications:
+  webhooks:
+    on_failure: always
+    on_start: always
+    on_success: always
+    urls:
+    - http://insights-portal-insights-service-webserver-dev.public-swarm.devfactory.com/travisWebHookListener?build_id=a1250db8-bdf3-4141-bb11-8a2102a0a97d
+script:
+- mvn test-compile -Dgpg.skip=true -Dlicense.skip=true
+- mvn test-compile -Dgpg.skip=true -Dlicense.skip=true
+sudo: false
+# Modified by Insights Service at 2016-11-27 19:20:53.368719
